@@ -1,5 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
+    <!-- Header -->
     <q-header elevated>
       <q-toolbar>
         <q-btn
@@ -15,11 +16,11 @@
           Mis Presupuestos Personales
         </q-toolbar-title>
 
-        <!-- <div>Quasar v{{ $q.version }}</div> -->
         <div><q-btn flat round color="white" icon="login" /></div>
       </q-toolbar>
     </q-header>
 
+    <!-- Menú lateral desplegable -->
     <q-drawer
       v-model="leftDrawerOpen"
       show-if-above
@@ -41,6 +42,7 @@
       </q-list>
     </q-drawer>
 
+    <!-- Router view -->
     <q-page-container>
       <router-view />
     </q-page-container>

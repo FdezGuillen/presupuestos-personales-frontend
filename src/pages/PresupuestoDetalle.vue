@@ -1,8 +1,39 @@
 <template>
   <div class="q-pa-lg">
+        <!-- Para generar pdf -->
+    <vue-html2pdf
+      :show-layout="false"
+      :float-layout="true"
+      :enable-download="true"
+      :preview-modal="true"
+      :paginate-elements-by-height="1080"
+      filename="Informe"
+      :pdf-quality="2"
+      :manual-pagination="false"
+      pdf-format="a4"
+      pdf-orientation="portrait"
+      pdf-content-width="760px"
+      ref="html2Pdf"
+    >
+      <contenido-pdf
+        :presupuesto="presupuesto"
+        :datosGraficoGeneral="datosGraficoGeneral"
+        :datosGraficoBalance="datosGraficoBalance"
+        :opcionesGraficoBalance="opcionesGraficoBalance"
+        :opcionesGraficoGeneral="opcionesGraficoGeneral"
+        :nombresCategorias="nombresCategorias"
+        :columns="columnsPdf"
+        :columnasReales="columnasRealesPdf"
+        :gastosReales="gastosReales"
+        :ingresosReales="ingresosReales"
+        :divisaPresupuesto="divisaPresupuesto"
+        slot="pdf-content"
+      ></contenido-pdf>
+    </vue-html2pdf>
+    
     <div class="row justify-start">
       <!-- Nombre, descripción, objetivo y fechas -->
-      <div class="col-12">
+      <div class="col-12 q-mb-md">
         <div class="row justify-end">
           <q-btn
             flat
@@ -10,6 +41,13 @@
             color="negative"
             icon="delete"
             @click="eliminar = true"
+          />
+          <q-btn
+            flat
+            round
+            color="primary"
+            icon="download"
+            @click="generarInforme"
           />
           <q-btn
             flat
@@ -58,6 +96,44 @@
           </div>
         </q-card-section>
       </q-card>
+
+      <!-- Grafico -->
+      <div class="col-12 col-md-8 q-pl-lg grafico-wrapper">
+        <q-card>
+          <q-tabs
+            v-model="tabGraficos"
+            dense
+            class="text-grey"
+            active-color="primary"
+            indicator-color="primary"
+            align="justify"
+            narrow-indicator
+          >
+            <q-tab name="analisis-balance" label="Balance" />
+            <q-tab name="analisis-gastos-ingresos" label="Gastos / Ingresos" />
+          </q-tabs>
+
+          <q-separator />
+
+          <q-tab-panels v-model="tabGraficos" animated>
+            <q-tab-panel name="analisis-balance">
+              <grafico-barra
+                :chart-data="datosGraficoBalance"
+                :options="opcionesGraficoBalance"
+                :height="150"
+              ></grafico-barra>
+            </q-tab-panel>
+
+            <q-tab-panel name="analisis-gastos-ingresos">
+              <grafico-component
+                :chart-data="datosGraficoGeneral"
+                :options="opcionesGraficoGeneral"
+                :height="150"
+              ></grafico-component>
+            </q-tab-panel>
+          </q-tab-panels>
+        </q-card>
+      </div>
     </div>
 
     <q-separator class="q-mt-lg q-mb-lg" />
@@ -86,135 +162,31 @@
 
           <q-tab-panels v-model="tab" animated>
             <q-tab-panel name="gastos">
-              <div class="row justify-end">
-                <q-btn
-                  flat
-                  round
-                  color="primary"
-                  icon="add"
-                  aria-label="Añadir gasto"
-                  @click="addGasto"
-                />
-              </div>
-              <q-table
-                :data="presupuesto.gastos_previstos"
+              <tabla-movimientos
+                :movimientos="presupuesto.gastos_previstos"
                 :columns="columns"
-                row-key="name"
-                binary-state-sort
-              >
-                <template v-slot:body="props">
-                  <q-tr :props="props">
-                    <q-tooltip>Haz click en un valor para editar</q-tooltip>
-                    <q-td key="categoria" :props="props">
-                      {{ props.row.categoria }}
-                      <q-popup-edit v-model="props.row.name">
-                        <q-select
-                          class="col-12 q-pb-md"
-                          filled
-                          v-model="props.row.categoria"
-                          :options="nombresCategorias"
-                          label="Categoría"
-                          :rules="[val => val !== null || 'Campo obligatorio']"
-                        />
-                      </q-popup-edit>
-                    </q-td>
-                    <q-td key="cantidad" :props="props">
-                      {{ props.row.cantidad }}
-                      <q-popup-edit
-                        v-model="props.row.cantidad"
-                        title="Actualizar cantidad"
-                        buttons
-                      >
-                        <q-input
-                          type="number"
-                          v-model="props.row.cantidad"
-                          dense
-                          autofocus
-                        />
-                      </q-popup-edit>
-                    </q-td>
-                    <q-td key="acciones" :props="props">
-                      <q-btn
-                        flat
-                        round
-                        color="negative"
-                        icon="delete"
-                        aria-label="Eliminar gasto"
-                        @click="eliminarGasto(props.row)"
-                      />
-                    </q-td>
-                  </q-tr>
-                </template>
-              </q-table>
+                :nombresCategorias="nombresCategorias"
+                v-bind:acciones="true"
+                :pagination="pagination"
+                @calcularBalance="calcularBalancePrevisto()"
+              ></tabla-movimientos>
             </q-tab-panel>
 
             <q-tab-panel name="ingresos">
-              <div class="row justify-end">
-                <q-btn
-                  flat
-                  round
-                  color="primary"
-                  icon="add"
-                  aria-label="Añadir ingreso"
-                  @click="addIngreso"
-                />
-              </div>
-              <q-table
-                :data="presupuesto.ingresos_previstos"
+              <tabla-movimientos
+                :movimientos="presupuesto.ingresos_previstos"
                 :columns="columns"
-                row-key="name"
-                binary-state-sort
-              >
-                <template v-slot:body="props">
-                  <q-tr :props="props">
-                    <q-tooltip>Haz click en un valor para editar</q-tooltip>
-                    <q-td key="categoria" :props="props">
-                      {{ props.row.categoria }}
-                      <q-popup-edit v-model="props.row.name">
-                        <q-select
-                          class="col-12 q-pb-md"
-                          filled
-                          v-model="props.row.categoria"
-                          :options="nombresCategorias"
-                          label="Categoría"
-                          :rules="[val => val !== null || 'Campo obligatorio']"
-                        />
-                      </q-popup-edit>
-                    </q-td>
-                    <q-td key="cantidad" :props="props">
-                      {{ props.row.cantidad }}
-                      <q-popup-edit
-                        v-model="props.row.cantidad"
-                        title="Actualizar cantidad"
-                        buttons
-                      >
-                        <q-input
-                          type="number"
-                          v-model="props.row.cantidad"
-                          dense
-                          autofocus
-                        />
-                      </q-popup-edit>
-                    </q-td>
-                    <q-td key="acciones" :props="props">
-                      <q-btn
-                        flat
-                        round
-                        color="negative"
-                        icon="delete"
-                        aria-label="Eliminar ingreso"
-                        @click="eliminarIngreso(props.row)"
-                      />
-                    </q-td>
-                  </q-tr>
-                </template>
-              </q-table>
+                :nombresCategorias="nombresCategorias"
+                v-bind:acciones="true"
+                :pagination="pagination"
+                @calcularBalance="calcularBalancePrevisto()"
+              ></tabla-movimientos>
             </q-tab-panel>
           </q-tab-panels>
 
           <q-card-section>
             <div class="text-h6 q-mt-sm q-mb-xs">
-              Balance previsto: {{ balancePrevisto }}
+              Balance: {{ balancePrevisto }}
             </div>
           </q-card-section>
         </q-card>
@@ -243,218 +215,41 @@
 
           <q-tab-panels v-model="tabReales" animated>
             <q-tab-panel name="gastos">
-              <div class="row justify-end">
-                <q-btn
-                  flat
-                  round
-                  color="primary"
-                  icon="add"
-                  aria-label="Añadir gasto"
-                  @click="addGastoReal"
-                />
-              </div>
-              <q-table
-                :data="gastosReales"
+              <tabla-movimientos
+                :movimientos="gastosReales"
                 :columns="columnasReales"
-                row-key="name"
-                binary-state-sort
-              >
-                <template v-slot:body="props">
-                  <q-tr :props="props">
-                    <q-tooltip>Haz click en un valor para editar</q-tooltip>
-                    <q-td key="categoria" :props="props">
-                      {{ props.row.categoria }}
-                      <q-popup-edit v-model="props.row.name">
-                        <q-select
-                          class="col-12 q-pb-md"
-                          filled
-                          v-model="props.row.categoria"
-                          :options="nombresCategorias"
-                          label="Categoría"
-                          :rules="[val => val !== null || 'Campo obligatorio']"
-                        />
-                      </q-popup-edit>
-                    </q-td>
-                    <q-td key="cantidad" :props="props">
-                      {{ props.row.cantidad }}
-                      <q-popup-edit
-                        v-model="props.row.cantidad"
-                        title="Actualizar cantidad"
-                        buttons
-                      >
-                        <q-input
-                          type="number"
-                          v-model="props.row.cantidad"
-                          dense
-                          autofocus
-                        />
-                      </q-popup-edit>
-                    </q-td>
-
-                    <q-td key="fecha" :props="props">
-                      {{ props.row.fecha }}
-                      <q-popup-edit
-                        v-model="props.row.fecha"
-                        title="Actualizar fecha"
-                        buttons
-                      >
-                        <q-input
-                          class="col-12 col-md-6 q-pb-md"
-                          filled
-                          v-model="props.row.fecha"
-                          label="Fecha"
-                          mask="date"
-                        >
-                          <template v-slot:append>
-                            <q-icon name="event" class="cursor-pointer">
-                              <q-popup-proxy
-                                ref="qDateProxy"
-                                transition-show="scale"
-                                transition-hide="scale"
-                              >
-                                <q-date v-model="props.row.fecha">
-                                  <div class="row items-center justify-end">
-                                    <q-btn
-                                      v-close-popup
-                                      label="Cerrar"
-                                      color="primary"
-                                      flat
-                                    />
-                                  </div>
-                                </q-date>
-                              </q-popup-proxy>
-                            </q-icon>
-                          </template>
-                        </q-input>
-                      </q-popup-edit>
-                    </q-td>
-
-                    <q-td key="acciones" :props="props">
-                      <q-btn
-                        flat
-                        round
-                        color="negative"
-                        icon="delete"
-                        aria-label="Eliminar gasto"
-                        @click="eliminarGastoReal(props.row)"
-                      />
-                    </q-td>
-                  </q-tr>
-                </template>
-              </q-table>
+                v-bind:fecha="true"
+                :nombresCategorias="nombresCategorias"
+                v-bind:acciones="true"
+                :pagination="pagination"
+                @calcularBalance="calcularBalanceReal()"
+              ></tabla-movimientos>
             </q-tab-panel>
 
             <q-tab-panel name="ingresos">
-              <div class="row justify-end">
-                <q-btn
-                  flat
-                  round
-                  color="primary"
-                  icon="add"
-                  aria-label="Añadir ingreso"
-                  @click="addIngresoReal"
-                />
-              </div>
-              <q-table
-                :data="ingresosReales"
+              <tabla-movimientos
+                :movimientos="ingresosReales"
                 :columns="columnasReales"
-                row-key="name"
-                binary-state-sort
-              >
-                <template v-slot:body="props">
-                  <q-tr :props="props">
-                    <q-tooltip>Haz click en un valor para editar</q-tooltip>
-                    <q-td key="categoria" :props="props">
-                      {{ props.row.categoria }}
-                      <q-popup-edit v-model="props.row.name">
-                        <q-select
-                          class="col-12 q-pb-md"
-                          filled
-                          v-model="props.row.categoria"
-                          :options="nombresCategorias"
-                          label="Categoría"
-                          :rules="[val => val !== null || 'Campo obligatorio']"
-                        />
-                      </q-popup-edit>
-                    </q-td>
-                    <q-td key="cantidad" :props="props">
-                      {{ props.row.cantidad }}
-                      <q-popup-edit
-                        v-model="props.row.cantidad"
-                        title="Actualizar cantidad"
-                        buttons
-                      >
-                        <q-input
-                          type="number"
-                          v-model="props.row.cantidad"
-                          dense
-                          autofocus
-                        />
-                      </q-popup-edit>
-                    </q-td>
-
-                    <q-td key="fecha" :props="props">
-                      {{ props.row.fecha }}
-                      <q-popup-edit
-                        v-model="props.row.fecha"
-                        title="Actualizar fecha"
-                        buttons
-                      >
-                        <q-input
-                          class="col-12 col-md-6 q-pb-md"
-                          filled
-                          v-model="props.row.fecha"
-                          label="Fecha"
-                          mask="date"
-                        >
-                          <template v-slot:append>
-                            <q-icon name="event" class="cursor-pointer">
-                              <q-popup-proxy
-                                ref="qDateProxy"
-                                transition-show="scale"
-                                transition-hide="scale"
-                              >
-                                <q-date v-model="props.row.fecha">
-                                  <div class="row items-center justify-end">
-                                    <q-btn
-                                      v-close-popup
-                                      label="Cerrar"
-                                      color="primary"
-                                      flat
-                                    />
-                                  </div>
-                                </q-date>
-                              </q-popup-proxy>
-                            </q-icon>
-                          </template>
-                        </q-input>
-                      </q-popup-edit>
-                    </q-td>
-
-                    <q-td key="acciones" :props="props">
-                      <q-btn
-                        flat
-                        round
-                        color="negative"
-                        icon="delete"
-                        aria-label="Eliminar ingreso"
-                        @click="eliminarIngresoReal(props.row)"
-                      />
-                    </q-td>
-                  </q-tr>
-                </template>
-              </q-table>
+                v-bind:fecha="true"
+                :nombresCategorias="nombresCategorias"
+                :pagination="pagination"
+                v-bind:acciones="true"
+                @calcularBalance="calcularBalanceReal()"
+              ></tabla-movimientos>
             </q-tab-panel>
           </q-tab-panels>
 
           <q-card-section>
             <div class="text-h6 q-mt-sm q-mb-xs">
-              Balance previsto: {{ balanceReal }}
+              Balance: {{ balanceReal }}
             </div>
           </q-card-section>
         </q-card>
       </div>
     </div>
+
+
+
     <!-- Formulario -->
     <q-dialog v-model="formulario" persistent>
       <PresupuestoForm
@@ -495,14 +290,28 @@ import { Vue, Component } from "vue-property-decorator";
 import PresupuestoService from "../services/presupuesto-service";
 import CategoriaService from "../services/categoria-service";
 import PresupuestoForm from "../components/PresupuestoForm.vue";
+import GraficoComponent from "../components/GraficoComponent.vue";
+import GraficoBarra from "../components/GraficoBarra.vue";
+import TablaMovimientos from "../components/TablaMovimientos.vue";
+import ContenidoPdf from "../components/ContenidoPdf.vue";
+import VueHtml2pdf from 'vue-html2pdf';
 
 @Component({
-  components: { PresupuestoForm }
+  components: {
+    PresupuestoForm,
+    GraficoComponent,
+    GraficoBarra,
+    TablaMovimientos,
+    ContenidoPdf,
+    VueHtml2pdf
+  }
 })
 export default class PresupuestoDetalleComponent extends Vue {
   data() {
     return {
-      presupuesto: {},
+      presupuesto: {
+        gastos_previstos: []
+      },
       divisas: [],
       divisaPresupuesto: {
         simbolo: ""
@@ -560,8 +369,76 @@ export default class PresupuestoDetalleComponent extends Vue {
           field: "acciones"
         }
       ],
+      columnsPdf: [
+        {
+          name: "categoria",
+          align: "center",
+          label: "Categoría",
+          field: "categoria",
+          sortable: true
+        },
+        {
+          name: "cantidad",
+          align: "center",
+          label: "Cantidad",
+          field: "cantidad",
+          sortable: true
+        }
+      ],
+      columnasRealesPdf: [
+        {
+          name: "categoria",
+          align: "center",
+          label: "Categoría",
+          field: "categoria",
+          sortable: true
+        },
+        {
+          name: "cantidad",
+          align: "center",
+          label: "Cantidad",
+          field: "cantidad",
+          sortable: true
+        },
+        {
+          name: "fecha",
+          align: "center",
+          label: "Fecha",
+          field: "fecha",
+          sortable: true
+        }
+      ],
+      pagination: {
+        page: 1,
+        rowsPerPage: 5 // 0 means all rows
+      },
       gastosReales: [],
-      ingresosReales: []
+      ingresosReales: [],
+      datosGraficoGeneral: {},
+      datosGraficoBalance: {},
+      opcionesGraficoGeneral: {
+        spanGaps: true,
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                suggestedMin: 0
+              }
+            }
+          ]
+        }
+      },
+      opcionesGraficoBalance: {
+        scales: {
+          xAxes: [
+            {
+              ticks: {
+                suggestedMin: 0
+              }
+            }
+          ]
+        }
+      }
     };
   }
 
@@ -570,12 +447,18 @@ export default class PresupuestoDetalleComponent extends Vue {
   id = this.$route.params.id;
   tab = "gastos";
   tabReales = "gastos";
-
+  tabGraficos = "analisis-balance";
   created() {
+    this.consultarPresupuesto();
+  }
+
+  consultarPresupuesto() {
     PresupuestoService.consultarPorId(this.$route.params.id)
       .then(res => {
         this.presupuesto = res.data.presupuestos;
-        this.divisaPresupuesto = res.data.presupuestos.divisa;
+        this.divisaPresupuesto = JSON.parse(
+          JSON.stringify(res.data.presupuestos.divisa)
+        );
         this.presupuesto.divisa = {
           value: this.presupuesto.divisa.codigo,
           label:
@@ -586,18 +469,10 @@ export default class PresupuestoDetalleComponent extends Vue {
         };
 
         let fechaInicio = new Date(this.presupuesto.fecha_inicio);
-        this.presupuesto.fecha_inicio =
-          fechaInicio.getFullYear() +
-          "/" +
-          fechaInicio
-            .getMonth()
-            .toString()
-            .padStart(2, 0) +
-          "/" +
-          fechaInicio
-            .getDate()
-            .toString()
-            .padStart(2, 0);
+        this.presupuesto.fecha_inicio = this.formatearFecha(fechaInicio);
+
+        let fechaFin = new Date(this.presupuesto.fecha_fin);
+        this.presupuesto.fecha_fin = this.formatearFecha(fechaFin);
 
         if (typeof this.presupuesto.gastos_previstos === "undefined") {
           this.presupuesto.gastos_previstos = [];
@@ -628,7 +503,8 @@ export default class PresupuestoDetalleComponent extends Vue {
             divisas.forEach(d => {
               opciones.push({
                 label: d.simbolo + " (" + d.nombre + ")",
-                value: d.codigo
+                value: d.codigo,
+                simbolo: d.simbolo
               });
             });
             this.divisas = opciones;
@@ -644,6 +520,9 @@ export default class PresupuestoDetalleComponent extends Vue {
               this.categorias = categorias;
               this.formatearMovimientos();
               this.calcularBalancePrevisto();
+              this.calcularBalanceReal();
+              this.actualizarGrafico();
+              this.actualizarGraficoBalance();
             });
           })
           .catch(error => {
@@ -656,61 +535,16 @@ export default class PresupuestoDetalleComponent extends Vue {
   }
 
   guardarPresupuesto(presupuesto) {
-    console.log(presupuesto);
-    presupuesto["divisa"] = presupuesto.divisa.value;
     this.presupuesto = presupuesto;
-  }
-
-  addGasto() {
-    this.presupuesto.gastos_previstos.push({
-      categoria: "Selecciona una categoría",
-      cantidad: 0
+    this.formulario = false;
+    this.divisas.forEach(d => {
+      console.log(d);
+      if (d.value === this.presupuesto.divisa) {
+        this.divisaPresupuesto = {
+          simbolo: d.simbolo
+        };
+      }
     });
-  }
-
-  addIngreso() {
-    this.presupuesto.ingresos_previstos.push({
-      categoria: "Selecciona una categoría",
-      cantidad: 0
-    });
-  }
-
-  eliminarGasto(item) {
-    const index = this.presupuesto.gastos_previstos.indexOf(item);
-    this.presupuesto.gastos_previstos.splice(index, 1);
-  }
-
-  eliminarIngreso(item) {
-    const index = this.presupuesto.ingresos_previstos.indexOf(item);
-    this.presupuesto.ingresos_previstos.splice(index, 1);
-  }
-
-  addGastoReal() {
-    this.gastosReales.push({
-      categoria: "Selecciona una categoría",
-      cantidad: 0,
-      fecha: this.formatearFecha(new Date()),
-      tipo: "gasto"
-    });
-  }
-
-  addIngresoReal() {
-    this.ingresosReales.push({
-      categoria: "Selecciona una categoría",
-      cantidad: 0,
-      fecha: this.formatearFecha(new Date()),
-      tipo: "ingreso"
-    });
-  }
-
-  eliminarGastoReal(item) {
-    const index = this.gastosReales.indexOf(item);
-    this.gastosReales.splice(index, 1);
-  }
-
-  eliminarIngresoReal(item) {
-    const index = this.ingresosReales.indexOf(item);
-    this.ingresosReales.splice(index, 1);
   }
 
   guardarCambios() {
@@ -730,9 +564,17 @@ export default class PresupuestoDetalleComponent extends Vue {
       });
     }
 
-    this.presupuesto.divisa = this.presupuesto.divisa.value;
     this.presupuesto.gastos_reales = this.gastosReales;
     this.presupuesto.ingresos_reales = this.ingresosReales;
+    this.presupuesto.divisa = this.presupuesto.divisa;
+    if (typeof this.presupuesto.divisa.value !== "undefined") {
+      this.presupuesto.divisa = this.presupuesto.divisa.value;
+    }
+    let fechaInicio = new Date(this.presupuesto.fecha_inicio);
+    this.presupuesto.fecha_inicio = this.formatearFecha(fechaInicio);
+
+    let fechaFin = new Date(this.presupuesto.fecha_fin);
+    this.presupuesto.fecha_fin = this.formatearFecha(fechaFin);
 
     for (var g = 0; g < this.presupuesto.gastos_reales.length; g++) {
       this.categorias.forEach(c => {
@@ -754,9 +596,7 @@ export default class PresupuestoDetalleComponent extends Vue {
       .then(res => {
         console.log(res);
         this.mostrarNotificacion("Presupuesto actualizado");
-        this.presupuesto = res.data.presupuesto;
-        this.calcularBalancePrevisto();
-        this.formatearMovimientos();
+        this.consultarPresupuesto();
       })
       .catch(error => {
         this.mostrarNotificacion(error.response.data.error, "negative");
@@ -811,21 +651,41 @@ export default class PresupuestoDetalleComponent extends Vue {
   }
 
   calcularBalancePrevisto() {
-    let sumaGastos = 0;
-    this.presupuesto.gastos_previstos.forEach(g => {
-      if (!isNaN(g.cantidad)) {
-        sumaGastos += g.cantidad;
-      }
-    });
+    let valor = 0;
 
-    let sumaIngresos = 0;
-    this.presupuesto.ingresos_previstos.forEach(i => {
+    this.presupuesto.ingresos_previstos.forEach(function(i) {
       if (!isNaN(i.cantidad)) {
-        sumaGastos += i.cantidad;
+        valor += parseFloat(i.cantidad);
       }
     });
 
-    return sumaIngresos - sumaGastos;
+    this.presupuesto.gastos_previstos.forEach(function(g) {
+      if (!isNaN(g.cantidad)) {
+        valor -= parseFloat(g.cantidad);
+      }
+    });
+
+    this.balancePrevisto = valor;
+  }
+
+  calcularBalanceReal() {
+    console.log(this.ingresosReales);
+    console.log(this.gastosReales);
+    let valor = 0;
+
+    this.ingresosReales.forEach(function(i) {
+      if (!isNaN(i.cantidad)) {
+        valor += parseFloat(i.cantidad);
+      }
+    });
+
+    this.gastosReales.forEach(function(g) {
+      if (!isNaN(g.cantidad)) {
+        valor -= parseFloat(g.cantidad);
+      }
+    });
+
+    this.balanceReal = valor;
   }
 
   mostrarNotificacion(mensaje: string, tipo = "info") {
@@ -836,19 +696,147 @@ export default class PresupuestoDetalleComponent extends Vue {
   }
 
   formatearFecha(fecha) {
+    let anualidad = fecha.getFullYear();
+    let mes = fecha.getMonth() + 1;
+    let dia = fecha.getDate();
     return (
-      fecha.getFullYear() +
+      anualidad +
       "/" +
-      fecha
-        .getMonth()
-        .toString()
-        .padStart(2, 0) +
+      mes.toString().padStart(2, 0) +
       "/" +
-      fecha
-        .getDate()
-        .toString()
-        .padStart(2, 0)
+      dia.toString().padStart(2, 0)
     );
+  }
+
+  actualizarGrafico() {
+    let datosGrafico = {
+      labels: [],
+      datasets: []
+    };
+
+    let arrayConFechas = this.gastosReales.concat(this.ingresosReales);
+    arrayConFechas.sort((a, b) => {
+      if (a.fecha > b.fecha) {
+        return 1;
+      } else if (a.fecha < b.fecha) {
+        return -1;
+      }
+      return 0;
+    });
+
+    let datasetGastos = {
+      label: "Gastos totales",
+      borderColor: "#f87979",
+      data: [],
+      fill: false
+    };
+
+    let datasetIngresos = {
+      label: "Ingresos totales",
+      borderColor: "#44b6eb",
+      data: [],
+      fill: false
+    };
+
+    let meses = [
+      "Enero",
+      "Febrero",
+      "Marzo",
+      "Abril",
+      "Mayo",
+      "Junio",
+      "Julio",
+      "Agosto",
+      "Septiembre",
+      "Octubre",
+      "Noviembre",
+      "Diciembre"
+    ];
+
+    let fechas = [];
+    let valorGastos = 0;
+    let valorIngresos = 0;
+    //Se iteran todos los datos para añadir
+    for (var i = 0; i < arrayConFechas.length; i++) {
+      if (arrayConFechas[i].tipo === "gasto") {
+        //Añadimos a gastos
+        if (!isNaN(arrayConFechas[i].cantidad)) {
+          valorGastos += arrayConFechas[i].cantidad;
+        }
+
+        datasetGastos.data.push(JSON.parse(JSON.stringify(valorGastos)));
+
+        // Si la fecha del siguiente item es mayor que la actual, hay que añadir un valor nulo a ingresos
+        if (
+          i < arrayConFechas.length - 1 &&
+          arrayConFechas[i + 1].fecha > arrayConFechas[i].fecha
+        ) {
+          datasetIngresos.data.push(null);
+        }
+      } else if (arrayConFechas[i].tipo === "ingreso") {
+        //Añadimos a ingresos
+        if (!isNaN(arrayConFechas[i].cantidad)) {
+          valorIngresos += arrayConFechas[i].cantidad;
+        }
+
+        datasetIngresos.data.push(JSON.parse(JSON.stringify(valorIngresos)));
+
+        // Si la fecha del siguiente item es mayor que la actual, hay que añadir un valor nulo a gastos
+        if (
+          i < arrayConFechas.length - 1 &&
+          arrayConFechas[i + 1].fecha > arrayConFechas[i].fecha
+        ) {
+          datasetGastos.data.push(null);
+        }
+      }
+
+      // Añadimos fecha
+      if (
+        fechas.length == 0 ||
+        (fechas.length > 0 &&
+          fechas[fechas.length - 1] !== arrayConFechas[i].fecha)
+      ) {
+        fechas.push(arrayConFechas[i].fecha);
+      }
+    }
+
+    // Añadimos los datasets al gráfico de gastos / ingresos
+    datosGrafico.datasets.push(datasetGastos);
+    datosGrafico.datasets.push(datasetIngresos);
+
+    //Sacamos labels de las fechas
+    fechas.forEach(f => {
+      let fecha = new Date(f);
+      let label =
+        fecha.getDate() + "-" + meses[fecha.getMonth()] + fecha.getFullYear();
+      datosGrafico.labels.push(label);
+    });
+
+    this.datosGraficoGeneral = datosGrafico;
+  }
+
+  actualizarGraficoBalance() {
+    let datosGraficoBalance = {
+      labels: ["Balance"],
+      datasets: [
+        {
+          label: "Previsto",
+          backgroundColor: "#44b6eb",
+          data: [this.balancePrevisto]
+        },
+        {
+          label: "Real",
+          backgroundColor: "#f87979",
+          data: [this.balanceReal]
+        }
+      ]
+    };
+
+    this.datosGraficoBalance = datosGraficoBalance;
+  }
+
+  generarInforme() {
+    this.$refs.html2Pdf.generatePdf();
   }
 }
 </script>

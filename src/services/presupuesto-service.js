@@ -81,6 +81,20 @@ class PresupuestoService {
       });
   }
 
+  crearMovimiento(datos){
+    let usuario = JSON.parse(localStorage.getItem('user'))._id;
+    let headers = authHeader();
+    let objeto = datos;
+    objeto["usuario"] = usuario;
+    return axiosInstance
+      .post('/presupuestos/movimiento', objeto, {
+        headers: headers
+      })
+      .then((response) => {
+        return response.data;
+      });
+  }
+
 }
 
 export default new PresupuestoService();
