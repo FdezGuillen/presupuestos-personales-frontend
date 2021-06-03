@@ -1,72 +1,82 @@
-<template>
-  <q-form @submit="crearMovimiento" class="q-gutter-md">
-    <q-select
-      class="col-12 q-pb-md"
-      filled
-      v-model="tipo"
-      :options="tipos"
-      option-value="value"
-      option-label="label"
-      label="Tipo de movimiento"
-    />
+<template
+  ><div>
+    <div v-if="presupuestos && presupuestos.length > 0">
+      <q-form @submit="crearMovimiento" class="q-gutter-md">
+        <q-select
+          class="col-12 q-pb-md"
+          filled
+          v-model="tipo"
+          :options="tipos"
+          option-value="value"
+          option-label="label"
+          label="Tipo de movimiento"
+        />
 
-    <q-input
-      filled
-      v-model="cantidad"
-      type="number"
-      label="Cantidad"
-      lazy-rules
-      :rules="[val => val > 0 || 'Campo obligatorio']"
-    />
+        <q-input
+          filled
+          v-model="cantidad"
+          type="number"
+          label="Cantidad"
+          lazy-rules
+          :rules="[val => val > 0 || 'Campo obligatorio']"
+        />
 
-    <q-select
-      class="col-12 q-pb-md"
-      filled
-      v-model="categoria"
-      :options="categorias"
-      option-value="value"
-      option-label="label"
-      label="Categoría"
-    />
+        <q-select
+          class="col-12 q-pb-md"
+          filled
+          v-model="categoria"
+          :options="categorias"
+          option-value="value"
+          option-label="label"
+          label="Categoría"
+        />
 
-    <q-input
-      class="col-12 col-md-6 q-pb-md q-pr-md"
-      filled
-      label="Fecha"
-      v-model="fecha"
-      mask="date"
-      :rules="['date']"
-    >
-      <template v-slot:append>
-        <q-icon name="event" class="cursor-pointer">
-          <q-popup-proxy
-            ref="qDateProxy"
-            transition-show="scale"
-            transition-hide="scale"
-          >
-            <q-date v-model="fecha">
-              <div class="row items-center justify-end">
-                <q-btn v-close-popup label="Cerrar" color="primary" flat />
-              </div>
-            </q-date>
-          </q-popup-proxy>
-        </q-icon>
-      </template>
-    </q-input>
+        <q-input
+          class="col-12 col-md-6 q-pb-md q-pr-md"
+          filled
+          label="Fecha"
+          v-model="fecha"
+          mask="date"
+          :rules="['date']"
+        >
+          <template v-slot:append>
+            <q-icon name="event" class="cursor-pointer">
+              <q-popup-proxy
+                ref="qDateProxy"
+                transition-show="scale"
+                transition-hide="scale"
+              >
+                <q-date v-model="fecha">
+                  <div class="row items-center justify-end">
+                    <q-btn v-close-popup label="Cerrar" color="primary" flat />
+                  </div>
+                </q-date>
+              </q-popup-proxy>
+            </q-icon>
+          </template>
+        </q-input>
 
-    <q-select
-      class="col-12 q-pb-md"
-      filled
-      v-model="presupuesto"
-      :options="presupuestos"
-      option-value="value"
-      option-label="label"
-      label="Presupuesto"
-    />
-    <div class="button-wrapper">
-      <q-btn label="Guardar" type="submit" color="primary" />
+        <q-select
+          class="col-12 q-pb-md"
+          filled
+          v-model="presupuesto"
+          :options="presupuestos"
+          option-value="value"
+          option-label="label"
+          label="Presupuesto"
+        />
+        <div class="button-wrapper">
+          <q-btn label="Guardar" type="submit" color="primary" />
+        </div>
+      </q-form>
     </div>
-  </q-form>
+    <div v-if="!presupuestos || presupuestos.length == 0" class="aviso-presupuestos">
+      <h5>No tienes ningún presupuesto</h5>
+        <router-link to="/presupuestos"
+                >Crea uno para empezar</router-link
+              >
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -154,3 +164,10 @@ export default class MovimientoForm extends Vue {
   }
 }
 </script>
+<style>
+
+.aviso-presupuestos{
+  text-align: center;
+}
+
+</style>

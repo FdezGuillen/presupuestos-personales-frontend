@@ -148,11 +148,11 @@ export default class ContenidoPdf extends Vue {
   @Prop({ type: Object, required: true }) opcionesGraficoBalance!: object;
   @Prop({ type: Object, required: true }) opcionesGraficoGeneral!: object;
   @Prop({ type: Object, required: true }) divisaPresupuesto!: object;
-  @Prop({ type: [], required: true }) nombresCategorias: any;
-  @Prop({ type: [], required: true }) columns: any;
-  @Prop({ type: [], required: true }) columnasReales: any;
-  @Prop({ type: [], required: true }) gastosReales: any;
-  @Prop({ type: [], required: true }) ingresosReales: any;
+  @Prop({ type: Array, required: true }) nombresCategorias: any;
+  @Prop({ type: Array, required: true }) columns: any;
+  @Prop({ type: Array, required: true }) columnasReales: any;
+  @Prop({ type: Array, required: true }) gastosReales: any;
+  @Prop({ type: Array, required: true }) ingresosReales: any;
 
   data() {
     return {

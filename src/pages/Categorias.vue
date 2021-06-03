@@ -3,6 +3,7 @@
     <div class="row justify-center">
       <h4>Categorías</h4>
     </div>
+
     <div class="row justify-center">
       <div class="col-12 col-md-6 col-lg-4">
         <div class="row justify-end">
@@ -18,7 +19,13 @@
             "
           />
         </div>
-        <q-list bordered separator>
+        <h5
+          class="aviso-categorias"
+          v-if="!categorias || categorias.length == 0"
+        >
+          Aún no has creado ninguna categoría
+        </h5>
+        <q-list bordered separator v-if="categorias && categorias.length > 0">
           <q-item v-ripple v-for="c in categorias">
             <q-item-section>
               <q-item-label>{{ c.nombre }}</q-item-label>
@@ -40,7 +47,7 @@
                   color="negative"
                   icon="delete"
                   aria-label="Eliminar categoría"
-                   @click="seleccionarCategoriaEliminar(c.nombre)"
+                  @click="seleccionarCategoriaEliminar(c.nombre)"
                 />
               </div>
             </q-item-section>
@@ -73,7 +80,13 @@
           </q-card-section>
 
           <q-card-actions align="right">
-            <q-btn flat label="Cancelar" color="primary" @click="categoriaEliminar = ''" v-close-popup />
+            <q-btn
+              flat
+              label="Cancelar"
+              color="primary"
+              @click="categoriaEliminar = ''"
+              v-close-popup
+            />
             <q-btn
               label="Guardar"
               color="positive"
@@ -196,9 +209,9 @@ export default class CategoriasComponent extends Vue {
       });
   }
 
-  seleccionarCategoriaEliminar(nombre){
-      this.categoriaEliminar = nombre;
-      this.confirm = true;
+  seleccionarCategoriaEliminar(nombre) {
+    this.categoriaEliminar = nombre;
+    this.confirm = true;
   }
 
   eliminarCategoria() {
@@ -232,3 +245,9 @@ export default class CategoriasComponent extends Vue {
   }
 }
 </script>
+<style>
+.aviso-categorias {
+  text-align: center;
+  padding: 10px;
+}
+</style>
