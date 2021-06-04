@@ -4,7 +4,7 @@ import {
   axiosInstance
 } from "src/boot/axios";
 
-
+// Servicio para categorías
 class CategoriaService {
   consultar() {
     let usuario = JSON.parse(localStorage.getItem('user')).username;

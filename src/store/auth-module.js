@@ -1,15 +1,30 @@
 import AuthService from '../services/auth-service';
 
 const user = JSON.parse(localStorage.getItem('user'));
-const initialState = user
-  ? { status: { loggedIn: true }, user }
-  : { status: { loggedIn: false }, user: null };
-
+const initialState = user ?
+  {
+    status: {
+      loggedIn: true
+    },
+    user
+  } :
+  {
+    status: {
+      loggedIn: false
+    },
+    user: null
+  };
+/* 
+  MÓDULO DE AUTENTICACIÓN
+  Gestiona mutaciones según el estado de la sesión del usuario */
+  
 export const auth = {
   namespaced: true,
   state: initialState,
   actions: {
-    login({ commit }, user) {
+    login({
+      commit
+    }, user) {
       return AuthService.login(user).then(
         user => {
           commit('loginSuccess', user);
@@ -21,11 +36,15 @@ export const auth = {
         }
       );
     },
-    logout({ commit }) {
+    logout({
+      commit
+    }) {
       AuthService.logout();
       commit('logout');
     },
-    register({ commit }, user) {
+    register({
+      commit
+    }, user) {
       return AuthService.registrar(user).then(
         response => {
           commit('registerSuccess');
@@ -38,26 +57,30 @@ export const auth = {
       );
     },
 
-    recuperar({commit}, email){
-        return AuthService.recuperarCuenta(email).then(
-            response => {
-              return Promise.resolve(response.data);
-            },
-            error => {
-              return Promise.reject(error);
-            }
-          );
+    recuperar({
+      commit
+    }, email) {
+      return AuthService.recuperarCuenta(email).then(
+        response => {
+          return Promise.resolve(response.data);
+        },
+        error => {
+          return Promise.reject(error);
+        }
+      );
     },
 
-    resetearPassword({commit}, cuerpo){
-        return AuthService.resetearPassword(cuerpo).then(
-            response => {
-              return Promise.resolve(response.data);
-            },
-            error => {
-              return Promise.reject(error);
-            }
-          );
+    resetearPassword({
+      commit
+    }, cuerpo) {
+      return AuthService.resetearPassword(cuerpo).then(
+        response => {
+          return Promise.resolve(response.data);
+        },
+        error => {
+          return Promise.reject(error);
+        }
+      );
     },
   },
 
@@ -82,4 +105,3 @@ export const auth = {
     }
   }
 };
-

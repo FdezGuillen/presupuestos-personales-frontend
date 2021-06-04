@@ -4,7 +4,7 @@ import {
   axiosInstance
 } from "src/boot/axios";
 
-
+// Servicio para presupuestos y movimientos
 class PresupuestoService {
   consultar() {
     let usuario = JSON.parse(localStorage.getItem('user')).username;

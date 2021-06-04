@@ -4,6 +4,7 @@ import { Todo, Meta } from "./models";
 import { HorizontalBar, mixins } from 'vue-chartjs'
 const { reactiveProp } = mixins
 
+// Componente con gráfico de barras de Chart.js
 export default {
   extends: HorizontalBar,
   mixins: [reactiveProp],

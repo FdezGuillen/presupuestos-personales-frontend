@@ -1,5 +1,6 @@
-<template
-  ><div>
+<template>
+  <!-- FORMULARIO PARA CREAR MOVIMIENTO -->
+  <div>
     <div v-if="presupuestos && presupuestos.length > 0">
       <q-form @submit="crearMovimiento" class="q-gutter-md">
         <q-select
@@ -70,11 +71,12 @@
         </div>
       </q-form>
     </div>
-    <div v-if="!presupuestos || presupuestos.length == 0" class="aviso-presupuestos">
+    <div
+      v-if="!presupuestos || presupuestos.length == 0"
+      class="aviso-presupuestos"
+    >
       <h5>No tienes ningún presupuesto</h5>
-        <router-link to="/presupuestos"
-                >Crea uno para empezar</router-link
-              >
+      <router-link to="/presupuestos">Crea uno para empezar</router-link>
     </div>
   </div>
 </template>
@@ -106,6 +108,7 @@ export default class MovimientoForm extends Vue {
     this.consultarCategorias();
   }
 
+  //Consulta presupuestos para generar las opciones del select del formulario
   consultarPresupuestos() {
     PresupuestoService.consultar()
       .then(res => {
@@ -123,6 +126,7 @@ export default class MovimientoForm extends Vue {
       });
   }
 
+  //Consulta categorías para generar las opciones del select del formulario
   consultarCategorias() {
     CategoriaService.consultar().then(res => {
       let categorias = res.data.categorias;
@@ -138,6 +142,7 @@ export default class MovimientoForm extends Vue {
     });
   }
 
+  //Envía el movimiento introducido por el usuario al servidor
   crearMovimiento() {
     let movimiento = {
       tipo: this.tipo.value,
@@ -156,6 +161,7 @@ export default class MovimientoForm extends Vue {
       });
   }
 
+  // Muestra un toast
   mostrarNotificacion(mensaje: string, tipo = "info") {
     this.$q.notify({
       message: mensaje,
@@ -165,9 +171,7 @@ export default class MovimientoForm extends Vue {
 }
 </script>
 <style>
-
-.aviso-presupuestos{
+.aviso-presupuestos {
   text-align: center;
 }
-
 </style>

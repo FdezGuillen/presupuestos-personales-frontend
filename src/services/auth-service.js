@@ -2,6 +2,7 @@
 import { axiosInstance} from "src/boot/axios";
 import { AxiosError, AxiosResponse } from "app/node_modules/axios";
 
+// Servicio de autenticación
 class AuthService {
   login(user) {
     return axiosInstance

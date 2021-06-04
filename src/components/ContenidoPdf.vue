@@ -1,4 +1,5 @@
 <template>
+<!-- Componente que tendrá el contenido de un pdf autogenerado a partir de un presupuesto -->
   <section class="pdf-content" slot="pdf-content">
     <section class="pdf-item">
       <div class="row justify-start">

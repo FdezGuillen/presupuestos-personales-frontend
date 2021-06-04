@@ -1,4 +1,5 @@
 <template>
+  <!-- LISTA DE CATEGORÍAS -->
   <div class="q-pa-lg">
     <div class="row justify-center">
       <h4>Categorías</h4>
@@ -149,6 +150,7 @@ export default class CategoriasComponent extends Vue {
     this.consultar();
   }
 
+  // Consulta lista de categorías
   consultar() {
     CategoriaService.consultar()
       .then(res => {
@@ -160,6 +162,7 @@ export default class CategoriasComponent extends Vue {
       });
   }
 
+  // Según la operación, llama a guardar una categoría nueva o editar una existente
   guardarCategoria() {
     if (this.editando === true) {
       this.editarCategoria();
@@ -169,6 +172,7 @@ export default class CategoriasComponent extends Vue {
     }
   }
 
+  // Envía una categoría nueva al servidor
   addCategoria() {
     CategoriaService.crearCategoria(this.nombre, this.descripcion)
       .then(res => {
@@ -188,6 +192,7 @@ export default class CategoriasComponent extends Vue {
       });
   }
 
+  // Envía una categoría al servidor para que la actualice
   editarCategoria() {
     CategoriaService.editarCategoria(
       this.nombreActual,
@@ -209,11 +214,13 @@ export default class CategoriasComponent extends Vue {
       });
   }
 
+  // Selecciona una categoría para eliminar
   seleccionarCategoriaEliminar(nombre) {
     this.categoriaEliminar = nombre;
     this.confirm = true;
   }
 
+  // Envía petición al servidor para que elimine una categoría
   eliminarCategoria() {
     CategoriaService.eliminarCategoria(this.categoriaEliminar)
       .then(res => {
@@ -229,6 +236,7 @@ export default class CategoriasComponent extends Vue {
       });
   }
 
+  // Abre un formulario para editar o crear categoría
   abrirEditor(categoria: any) {
     this.editando = true;
     this.nombre = categoria.nombre;

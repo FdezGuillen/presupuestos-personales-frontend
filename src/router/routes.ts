@@ -12,8 +12,7 @@ const routes: RouteConfig[] = [
   { path: '/presupuestos', component: () => import('pages/Presupuestos.vue') },
   { path: '/presupuestos/:id', component: () => import('pages/PresupuestoDetalle.vue') },
   { path: '/categorias', component: () => import('pages/Categorias.vue') },
-  // Always leave this as last one,
-  // but you can also remove it
+
   {
     path: '*',
     component: () => import('pages/Error404.vue')

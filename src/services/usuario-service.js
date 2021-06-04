@@ -4,7 +4,7 @@ import {
   axiosInstance
 } from "src/boot/axios";
 
-
+// Servicio para usuarios
 class UsuarioService {
   modificarUsuario(datos) {
     let headers = authHeader();

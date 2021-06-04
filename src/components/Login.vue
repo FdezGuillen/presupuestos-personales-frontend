@@ -26,10 +26,7 @@
               v-model="passwordLogin"
               label="Contraseña"
               lazy-rules
-              :rules="[
-                val => (val && val.length > 0) || 'Campo obligatorio'
-                //val => val > 0 && val < 100 || 'Please type a real age'
-              ]"
+              :rules="[val => (val && val.length > 0) || 'Campo obligatorio']"
             />
             <div class="button-wrapper">
               <q-btn label="Entrar" type="submit" color="primary" />
@@ -128,35 +125,7 @@ export default class LoginComponent extends Vue {
     }
   }
 
-  handleLogin() {
-    if (this.emailLogin && this.passwordLogin) {
-      this.$store
-        .dispatch("auth/login", {
-          correo_electronico: this.emailLogin,
-          password: this.passwordLogin
-        })
-        .then(
-          () => {
-            this.$router.push("/");
-          },
-          error => {
-            if (
-              typeof error.response !== "undefined" &&
-              typeof error.response.data !== "undefined" &&
-              typeof error.response.data.error !== "undefined"
-            ) {
-              this.mostrarNotificacion(error.response.data.error, "negative");
-            } else {
-              this.mostrarNotificacion(
-                "No se pudo completar el registro. Por favor, vuelve a intentarlo más tarde",
-                "negative"
-              );
-            }
-          }
-        );
-    }
-  }
-
+  //Si se ha introducido datos correctos, envía petición para iniciar sesión
   iniciarSesion() {
     let usuario = {
       correo_electronico: this.emailLogin,
@@ -166,7 +135,7 @@ export default class LoginComponent extends Vue {
     this.$store
       .dispatch("auth/login", usuario)
       .then((res: XMLHttpRequest) => {
-          this.$router.go("/");
+        this.$router.go("/");
       })
       .catch((error: any) => {
         let respuesta = error.response;
@@ -182,6 +151,7 @@ export default class LoginComponent extends Vue {
       });
   }
 
+  // Registra un usuario con los datos del formulario
   registrar() {
     let usuario = {
       username: this.username,
@@ -221,6 +191,7 @@ export default class LoginComponent extends Vue {
       });
   }
 
+  // Muestra un toast
   mostrarNotificacion(mensaje: string, tipo = "info") {
     this.$q.notify({
       message: mensaje,

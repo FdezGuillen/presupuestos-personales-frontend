@@ -1,4 +1,5 @@
 <template>
+  <!-- LISTADO DE PRESUPUESTOS -->
   <div class="q-pa-lg">
     <div class="row justify-center">
       <h4>Presupuestos</h4>
@@ -42,14 +43,13 @@
 
     <!-- Formulario -->
     <q-dialog v-model="formulario" persistent>
-        <PresupuestoForm
-         :presupuesto="presupuesto"
-         :divisas="divisas"
-         @guardarPresupuesto="guardarPresupuesto($event)"
-         @cerrar="formulario=false"
-        />
+      <PresupuestoForm
+        :presupuesto="presupuesto"
+        :divisas="divisas"
+        @guardarPresupuesto="guardarPresupuesto($event)"
+        @cerrar="formulario = false"
+      />
     </q-dialog>
-    
   </div>
 </template>
 
@@ -59,7 +59,7 @@ import PresupuestoService from "../services/presupuesto-service";
 import PresupuestoForm from "../components/PresupuestoForm.vue";
 
 @Component({
-    components: { PresupuestoForm },
+  components: { PresupuestoForm }
 })
 export default class PresupuestosComponent extends Vue {
   data() {
@@ -92,6 +92,20 @@ export default class PresupuestosComponent extends Vue {
     };
   }
 
+  presupuesto = {
+    nombre: "",
+    descripcion: "",
+    objetivo: null,
+    fecha_inicio: new Date(),
+    fecha_fin: null,
+    divisa: "",
+    gastos_previstos: [],
+    ingresos_previstos: []
+  };
+
+  formulario = false;
+
+  // Consulta todos los datos necesarios para la interfaz
   created() {
     PresupuestoService.consultarDivisas()
       .then(res => {
@@ -111,19 +125,7 @@ export default class PresupuestosComponent extends Vue {
       });
   }
 
-  presupuesto = {
-    nombre: "",
-    descripcion: "",
-    objetivo: null,
-    fecha_inicio: new Date(),
-    fecha_fin: null,
-    divisa: "",
-    gastos_previstos: [],
-    ingresos_previstos: []
-  };
-
-  formulario = false;
-
+//Consulta lista de presupuestos
   consultarPresupuestos() {
     PresupuestoService.consultar()
       .then(res => {
@@ -134,6 +136,7 @@ export default class PresupuestosComponent extends Vue {
       });
   }
 
+// Vacía las variables utilizadas por el formulario para añadir presupuesto
   borrarPresupuesto() {
     this.presupuesto = {
       nombre: "",
@@ -147,7 +150,8 @@ export default class PresupuestosComponent extends Vue {
     };
   }
 
-  guardarPresupuesto(presupuesto:any) {
+// Envía un presupuesto al servidor para guardarlo
+  guardarPresupuesto(presupuesto: any) {
     presupuesto["divisa"] = presupuesto.divisa.value;
     PresupuestoService.crearPresupuesto(presupuesto)
       .then(res => {
@@ -166,9 +170,9 @@ export default class PresupuestosComponent extends Vue {
       });
   }
 
-  elegirPresupuesto(event: any, row: any){
-      console.log(row._id);
-      this.$router.push("/presupuestos/" + row._id);
+//Lleva al detalle del presupuesto que se ha elegido
+  elegirPresupuesto(event: any, row: any) {
+    this.$router.push("/presupuestos/" + row._id);
   }
 
   mostrarNotificacion(mensaje: string, tipo = "info") {

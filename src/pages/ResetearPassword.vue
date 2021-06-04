@@ -1,4 +1,5 @@
 <template>
+  <!-- PÁGINA PARA RESETEAR CONTRASEÑA OLVIDADA -->
   <q-page class="row justify-evenly">
     <div class="col-12 col-md-4 q-pa-md formulario">
       <q-card class="q-pa-md">
@@ -33,46 +34,29 @@ import { Vue, Component } from "vue-property-decorator";
 export default class HomeComponent extends Vue {
   password = "";
 
+  //envía contraseña al servidor para actualizarla
   guardar() {
     let objetoCuerpo = {
-      token:  this.$router.currentRoute.query.token,
-      user_id:  this.$router.currentRoute.query.id,
+      token: this.$router.currentRoute.query.token,
+      user_id: this.$router.currentRoute.query.id,
       password: this.password
     };
 
-    this.$store.dispatch('auth/resetearPassword', objetoCuerpo)
-        .then((res) => {
-          alert("Contraseña guardada correctamente. Inicia sesión con tus nuevos datos");
-           this.$router.push('login');
-        })
-        .catch((error: any) => {
-            this.mostrarNotificacion(
-              "No se pudo completar el proceso. Por favor, inténtalo más tarde.",
-              "negative"
-            );
-          
-        });
+    this.$store
+      .dispatch("auth/resetearPassword", objetoCuerpo)
+      .then(res => {
+        alert(
+          "Contraseña guardada correctamente. Inicia sesión con tus nuevos datos"
+        );
+        this.$router.push("login");
+      })
+      .catch((error: any) => {
+        this.mostrarNotificacion(
+          "No se pudo completar el proceso. Por favor, inténtalo más tarde.",
+          "negative"
+        );
+      });
   }
-  //   recuperar() {
-  //     this.$store.dispatch('auth/recuperar', this.emailLogin)
-  //       .then((res) => {
-  //         this.mostrarNotificacion(res.mensaje);
-  //       })
-  //       .catch((error: any) => {
-  //         if (
-  //           typeof error.response !== "undefined" &&
-  //           typeof error.response.data !== "undefined" &&
-  //           typeof error.response.data.error !== "undefined"
-  //         ) {
-  //           this.mostrarNotificacion(error.response.data.error, "negative");
-  //         } else {
-  //           this.mostrarNotificacion(
-  //             "No se pudo completar el proceso. Por favor, inténtalo más tarde.",
-  //             "negative"
-  //           );
-  //         }
-  //       });
-  //   }
 
   mostrarNotificacion(mensaje: string, tipo = "info") {
     this.$q.notify({

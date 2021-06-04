@@ -1,4 +1,5 @@
 <template>
+  <!-- PÁGINA DE GESTIÓN DE DATOS DE USUARIO -->
   <div class="q-pa-lg">
     <div class="row justify-center">
       <q-avatar size="150px" class="q-mb-sm items-center avatar-usuario">
@@ -62,10 +63,7 @@
                 v-model="password"
                 label="Introduce tu contraseña para confirmar los cambios"
                 lazy-rules
-                :rules="[
-                  val => (val && val.length > 0) || 'Campo obligatorio'
-                  //val => val > 0 && val < 100 || 'Please type a real age'
-                ]"
+                :rules="[val => (val && val.length > 0) || 'Campo obligatorio']"
               />
               <div class="button-wrapper">
                 <q-btn label="Guardar" type="submit" color="primary" />
@@ -83,10 +81,7 @@
                 v-model="nuevaPassword"
                 label="Contraseña nueva"
                 lazy-rules
-                :rules="[
-                  val => (val && val.length > 0) || 'Campo obligatorio'
-                  //val => val > 0 && val < 100 || 'Please type a real age'
-                ]"
+                :rules="[val => (val && val.length > 0) || 'Campo obligatorio']"
               />
               <q-input
                 filled
@@ -94,10 +89,7 @@
                 v-model="passwordActual"
                 label="Introduce tu contraseña antigua para confirmar los cambios"
                 lazy-rules
-                :rules="[
-                  val => (val && val.length > 0) || 'Campo obligatorio'
-                  //val => val > 0 && val < 100 || 'Please type a real age'
-                ]"
+                :rules="[val => (val && val.length > 0) || 'Campo obligatorio']"
               />
               <div class="button-wrapper">
                 <q-btn label="Guardar" type="submit" color="primary" />
@@ -129,7 +121,9 @@
         <q-form @submit="eliminarCuenta" class="q-gutter-md q-my-lg">
           <q-card-section class="row items-center">
             <q-avatar icon="warning" color="negative" text-color="white" />
-            <span class="q-ml-sm q-my-lg">¿Seguro que quieres darte de baja?</span>
+            <span class="q-ml-sm q-my-lg"
+              >¿Seguro que quieres darte de baja?</span
+            >
             <q-input
               class="col-12"
               filled
@@ -137,10 +131,7 @@
               v-model="passwordEliminar"
               label="Introduce tu contraseña para confirmar"
               lazy-rules
-              :rules="[
-                val => (val && val.length > 0) || 'Campo obligatorio'
-                //val => val > 0 && val < 100 || 'Please type a real age'
-              ]"
+              :rules="[val => (val && val.length > 0) || 'Campo obligatorio']"
             />
           </q-card-section>
 
@@ -199,6 +190,8 @@ export default class UsuarioComponent extends Vue {
 
   passwordEliminar = "";
   imagen = [];
+
+  // Envía datos del usuario al servidor para actualizarlo
   editar() {
     let usuario = {
       username: this.username,
@@ -223,6 +216,7 @@ export default class UsuarioComponent extends Vue {
       });
   }
 
+  // Envía petición al servidor para actualizar contraseña
   cambiarPassword() {
     let datos = {
       username: this.$store.state.auth.user.username,
@@ -232,7 +226,6 @@ export default class UsuarioComponent extends Vue {
     UsuarioService.modificarPassword(datos)
       .then((res: any) => {
         this.mostrarNotificacion(res.data.mensaje, "positive");
-        // this.$router.go('/mi-cuenta');
       })
       .catch((error: AxiosError) => {
         console.log(error);
@@ -243,6 +236,7 @@ export default class UsuarioComponent extends Vue {
       });
   }
 
+  // Envía petición al servidor para eliminar cuenta
   eliminarCuenta() {
     let datos = {
       username: this.$store.state.auth.user.username,
@@ -252,18 +246,17 @@ export default class UsuarioComponent extends Vue {
       .then((res: any) => {
         this.$store.dispatch("auth/logout");
       })
-      .catch((error) => {
-          this.passwordEliminar = "";
+      .catch(error => {
+        this.passwordEliminar = "";
         this.mostrarNotificacion(error.response.data.error, "negative");
       });
   }
 
-  onRejected(rejectedEntries: any) {
-    // Notify plugin needs to be installed
-    // https://quasar.dev/quasar-plugins/notify#Installation
+// Si se intenta subir una imagen muy pesada, se muestra un toast de error
+  onRejected(archivos: any) {
     this.$q.notify({
       type: "negative",
-      message: `${rejectedEntries.length} file(s) did not pass validation constraints`
+      message: `${archivos.length} imágenes no cumplen con los requisitos`
     });
   }
 

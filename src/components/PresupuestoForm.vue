@@ -1,8 +1,9 @@
 <template>
+<!-- FORMULARIO PARA CREAR Y EDITAR PRESUPUESTO -->
   <q-card>
     <q-form @submit="guardarPresupuesto" class="q-gutter-md q-pa-md">
       <q-card-section>
-        <div class="text-h6">Crear presupuesto</div>
+        <div class="text-h6">Presupuesto</div>
       </q-card-section>
       <q-card-section class="row items-center">
         <q-input
@@ -106,6 +107,7 @@ export default class PresupuestoForm extends Vue {
   @Prop({ type: Object, required: true }) presupuesto!: object;
   @Prop({ type: Array, required: true }) divisas!: [];
 
+  //Devuelve el presupuesto introducido por el usuario al componente padre
   guardarPresupuesto() {
     let codigoDivisa = "";
 
@@ -121,6 +123,7 @@ export default class PresupuestoForm extends Vue {
     this.$emit("guardarPresupuesto", presupuestoGuardar);
   }
 
+  //Emite un evento al padre para cerrar el formulario
   cerrar() {
     this.$emit("cerrar");
   }

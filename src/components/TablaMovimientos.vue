@@ -1,4 +1,5 @@
 <template>
+  <!-- TABLA PARA GESTIONAR MOVIMIENTOS DE UN TIPO DE UN PRESUPUESTO -->
   <div>
     <div class="row justify-end" v-if="acciones">
       <q-btn
@@ -62,6 +63,7 @@
                 v-model="props.row.fecha"
                 label="Fecha"
                 mask="date"
+                @change="calcularBalance"
               >
                 <template v-slot:append>
                   <q-icon name="event" class="cursor-pointer">
@@ -107,26 +109,39 @@ import { Vue, Component, Prop } from "vue-property-decorator";
 
 @Component
 export default class TablaMovimientos extends Vue {
-  @Prop({ type: [], required: true }) movimientos: any;
-  @Prop({ type: [], required: true }) nombresCategorias: any;
-  @Prop({ type: [], required: true }) columns: any;
+  @Prop({ type: Array, required: true }) movimientos: any;
+  @Prop({ type: Array, required: true }) nombresCategorias: any;
+  @Prop({ type: Array, required: true }) columns: any;
   @Prop({ type: Boolean, default: false }) fecha;
   @Prop({ type: Boolean, default: false }) acciones;
   @Prop({ type: Object, required: true }) pagination;
 
+  // Añade movimiento
   addMovimiento() {
-    this.movimientos.push({
+    let mov = {
       categoria: "Selecciona una categoría",
       cantidad: 0
-    });
+    };
+
+    let fecha = new Date();
+    let mes = fecha.getMonth() + 1;
+    let mesString = mes.toString().padStart(2, "0");
+    let dia = fecha.getDate();
+    let diaString = dia.toString().padStart(2, "0");
+    if (this.fecha == true) {
+      mov["fecha"] = fecha.getFullYear() + "/" + mesString + "/" + diaString;
+    }
+    this.movimientos.push(mov);
   }
 
+  // Elimina movimiento
   eliminarMovimiento(item) {
     const index = this.movimientos.indexOf(item);
     this.movimientos.splice(index, 1);
     this.calcularBalance();
   }
 
+  // Emite evento para que el padre actualice los datos
   calcularBalance() {
     this.$emit("calcularBalance");
   }

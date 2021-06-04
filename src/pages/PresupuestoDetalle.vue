@@ -1,6 +1,7 @@
 <template>
+  <!-- DETALLE Y GESTIÓN DE UN PRESUPUESTO -->
   <div class="q-pa-lg">
-        <!-- Para generar pdf -->
+    <!-- Para generar pdf -->
     <vue-html2pdf
       :show-layout="false"
       :float-layout="true"
@@ -30,7 +31,7 @@
         slot="pdf-content"
       ></contenido-pdf>
     </vue-html2pdf>
-    
+
     <div class="row justify-start">
       <!-- Nombre, descripción, objetivo y fechas -->
       <div class="col-12 q-mb-md">
@@ -98,7 +99,7 @@
       </q-card>
 
       <!-- Grafico -->
-      <div class="col-12 col-md-8 q-pl-lg grafico-wrapper">
+      <div class="col-12 col-md-8 grafico-wrapper">
         <q-card>
           <q-tabs
             v-model="tabGraficos"
@@ -117,19 +118,37 @@
 
           <q-tab-panels v-model="tabGraficos" animated>
             <q-tab-panel name="analisis-balance">
-              <grafico-barra
-                :chart-data="datosGraficoBalance"
-                :options="opcionesGraficoBalance"
-                :height="150"
-              ></grafico-barra>
+              <div class="desktop-only">
+                <grafico-barra
+                  :chart-data="datosGraficoBalance"
+                  :options="opcionesGraficoBalance"
+                  :height="150"
+                ></grafico-barra>
+              </div>
+              <div class="mobile-only">
+                <grafico-barra
+                  :chart-data="datosGraficoBalance"
+                  :options="opcionesGraficoBalance"
+                  :height="300"
+                ></grafico-barra>
+              </div>
             </q-tab-panel>
 
             <q-tab-panel name="analisis-gastos-ingresos">
-              <grafico-component
-                :chart-data="datosGraficoGeneral"
-                :options="opcionesGraficoGeneral"
-                :height="150"
-              ></grafico-component>
+              <div class="desktop-only">
+                <grafico-component
+                  :chart-data="datosGraficoGeneral"
+                  :options="opcionesGraficoGeneral"
+                  :height="150"
+                ></grafico-component>
+              </div>
+              <div class="mobile-only">
+                <grafico-component
+                  :chart-data="datosGraficoGeneral"
+                  :options="opcionesGraficoGeneral"
+                  :height="300"
+                ></grafico-component>
+              </div>
             </q-tab-panel>
           </q-tab-panels>
         </q-card>
@@ -248,8 +267,6 @@
       </div>
     </div>
 
-
-
     <!-- Formulario -->
     <q-dialog v-model="formulario" persistent>
       <PresupuestoForm
@@ -294,7 +311,7 @@ import GraficoComponent from "../components/GraficoComponent.vue";
 import GraficoBarra from "../components/GraficoBarra.vue";
 import TablaMovimientos from "../components/TablaMovimientos.vue";
 import ContenidoPdf from "../components/ContenidoPdf.vue";
-import VueHtml2pdf from 'vue-html2pdf';
+import VueHtml2pdf from "vue-html2pdf";
 
 @Component({
   components: {
@@ -410,7 +427,7 @@ export default class PresupuestoDetalleComponent extends Vue {
       ],
       pagination: {
         page: 1,
-        rowsPerPage: 5 // 0 means all rows
+        rowsPerPage: 5
       },
       gastosReales: [],
       ingresosReales: [],
@@ -448,10 +465,12 @@ export default class PresupuestoDetalleComponent extends Vue {
   tab = "gastos";
   tabReales = "gastos";
   tabGraficos = "analisis-balance";
+
   created() {
     this.consultarPresupuesto();
   }
 
+  // Consulta un presupuesto por el id obtenido de la ruta y genera la interfaz a partir de los datos obtenidos
   consultarPresupuesto() {
     PresupuestoService.consultarPorId(this.$route.params.id)
       .then(res => {
@@ -521,8 +540,6 @@ export default class PresupuestoDetalleComponent extends Vue {
               this.formatearMovimientos();
               this.calcularBalancePrevisto();
               this.calcularBalanceReal();
-              this.actualizarGrafico();
-              this.actualizarGraficoBalance();
             });
           })
           .catch(error => {
@@ -534,6 +551,7 @@ export default class PresupuestoDetalleComponent extends Vue {
       });
   }
 
+  // Recibe los datos del formulario para editar presupuesto y los asigna en las variables
   guardarPresupuesto(presupuesto) {
     this.presupuesto = presupuesto;
     this.formulario = false;
@@ -547,6 +565,7 @@ export default class PresupuestoDetalleComponent extends Vue {
     });
   }
 
+  // Envía petición al servidor para guardar los cambios realizados
   guardarCambios() {
     for (var g = 0; g < this.presupuesto.gastos_previstos.length; g++) {
       this.categorias.forEach(c => {
@@ -606,6 +625,7 @@ export default class PresupuestoDetalleComponent extends Vue {
       });
   }
 
+  // Formatea los datos de los movimientos para presentarlos en las tablas
   formatearMovimientos() {
     for (var g = 0; g < this.presupuesto.gastos_previstos.length; g++) {
       this.categorias.forEach(c => {
@@ -640,6 +660,7 @@ export default class PresupuestoDetalleComponent extends Vue {
     }
   }
 
+  // Envía petición al servidor para borrar el presupuesto
   eliminarPresupuesto() {
     PresupuestoService.eliminarPresupuesto(this.id)
       .then(res => {
@@ -650,6 +671,7 @@ export default class PresupuestoDetalleComponent extends Vue {
       });
   }
 
+  // Calcula el balance de los movimientos previstos
   calcularBalancePrevisto() {
     let valor = 0;
 
@@ -666,8 +688,10 @@ export default class PresupuestoDetalleComponent extends Vue {
     });
 
     this.balancePrevisto = valor;
+    this.actualizarGraficoBalance();
   }
 
+  // Calcula el balance de los movimientos reales
   calcularBalanceReal() {
     console.log(this.ingresosReales);
     console.log(this.gastosReales);
@@ -686,8 +710,11 @@ export default class PresupuestoDetalleComponent extends Vue {
     });
 
     this.balanceReal = valor;
+    this.actualizarGrafico();
+    this.actualizarGraficoBalance();
   }
 
+  //Muestra un toast
   mostrarNotificacion(mensaje: string, tipo = "info") {
     this.$q.notify({
       message: mensaje,
@@ -695,6 +722,7 @@ export default class PresupuestoDetalleComponent extends Vue {
     });
   }
 
+  // Cambia el formato de la fecha
   formatearFecha(fecha) {
     let anualidad = fecha.getFullYear();
     let mes = fecha.getMonth() + 1;
@@ -708,6 +736,7 @@ export default class PresupuestoDetalleComponent extends Vue {
     );
   }
 
+  // Actualiza el componente gráfico lineal
   actualizarGrafico() {
     let datosGrafico = {
       labels: [],
@@ -815,6 +844,7 @@ export default class PresupuestoDetalleComponent extends Vue {
     this.datosGraficoGeneral = datosGrafico;
   }
 
+  // Actualiza el gráfico de los balances
   actualizarGraficoBalance() {
     let datosGraficoBalance = {
       labels: ["Balance"],
@@ -835,6 +865,7 @@ export default class PresupuestoDetalleComponent extends Vue {
     this.datosGraficoBalance = datosGraficoBalance;
   }
 
+  //Genera un pdf del presupuesto para descargar
   generarInforme() {
     this.$refs.html2Pdf.generatePdf();
   }
